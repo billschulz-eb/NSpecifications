@@ -13,8 +13,8 @@ public sealed class SpecTests
         // Arrange
         var coldWhiskey = Drink.ColdWhiskey();
         var appleJuice = Drink.AppleJuice();
-        var whiskeySpec = new Spec<Drink>(d => d.Name.Equals("whiskey", StringComparison.OrdinalIgnoreCase));
-        var coldSpec = new Spec<Drink>(d => d.With.Any(w => w.Equals("ice", StringComparison.OrdinalIgnoreCase)));
+        var whiskeySpec = new Spec<Drink>(d => CSharpFunctionalExtensions.Result.SuccessIf(d.Name.Equals("whiskey", StringComparison.OrdinalIgnoreCase), "not whiskey"));
+        var coldSpec = new Spec<Drink>(d => CSharpFunctionalExtensions.Result.SuccessIf(d.With.Any(w => w.Equals("ice", StringComparison.OrdinalIgnoreCase)), "not a cold drink"));
 
         // Act
         var coldWhiskeySpec = whiskeySpec & coldSpec;
@@ -34,9 +34,9 @@ public sealed class SpecTests
         var blackberryJuice = Drink.BlackberryJuice();
         var appleJuice = Drink.AppleJuice();
         var orangeJuice = Drink.OrangeJuice();
-        var juiceSpec = new Spec<Drink>(d => d.Name.Contains("juice", StringComparison.OrdinalIgnoreCase));
-        var appleSpec = new Spec<Drink>(d => d.Name.Contains("apple", StringComparison.OrdinalIgnoreCase));
-        var orangeSpec = new Spec<Drink>(d => d.Name.Contains("orange", StringComparison.OrdinalIgnoreCase));
+        var juiceSpec = new Spec<Drink>(d => CSharpFunctionalExtensions.Result.SuccessIf(d.Name.Contains("juice",   StringComparison.OrdinalIgnoreCase), "not juice"));
+        var appleSpec = new Spec<Drink>(d => CSharpFunctionalExtensions.Result.SuccessIf(d.Name.Contains("apple",   StringComparison.OrdinalIgnoreCase), "not apple"));
+        var orangeSpec = new Spec<Drink>(d => CSharpFunctionalExtensions.Result.SuccessIf(d.Name.Contains("orange", StringComparison.OrdinalIgnoreCase), "not orange"));
 
         // Act
         var appleOrOrangeJuiceSpec = juiceSpec & (appleSpec | orangeSpec);
@@ -56,8 +56,8 @@ public sealed class SpecTests
         // Arrange
         var coldWhiskey = Drink.ColdWhiskey();
         var appleJuice = Drink.AppleJuice();
-        var whiskeySpec = new Spec<IDrink>(d => d.Name.Equals("whiskey", StringComparison.OrdinalIgnoreCase));
-        var coldSpec = new Spec<IDrink>(d => d.With.Any(w => w.Equals("ice", StringComparison.OrdinalIgnoreCase)));
+        var whiskeySpec = new Spec<IDrink>(d => CSharpFunctionalExtensions.Result.SuccessIf(d.Name.Equals("whiskey", StringComparison.OrdinalIgnoreCase), "not whiskey"));
+        var coldSpec = new Spec<IDrink>(d => CSharpFunctionalExtensions.Result.SuccessIf(d.With.Any(w => w.Equals("ice", StringComparison.OrdinalIgnoreCase)), "no cold drinks"));
 
         // Act
         var coldWhiskeySpec = whiskeySpec & coldSpec;

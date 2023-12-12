@@ -1,4 +1,6 @@
-﻿namespace NSpecifications;
+﻿using CSharpFunctionalExtensions;
+
+namespace NSpecifications;
 
 /// <summary>
 /// Represents a generic specification.
@@ -14,25 +16,25 @@ public class Spec<T> : ASpec<T>
     /// <summary>
     /// Represents a specification that is satisfied by any candidate object.
     /// </summary>
-    public static readonly Spec<T> Any = new(_ => true);
+    public static readonly Spec<T> Any = new(_ => Result.Success());
 
     /// <summary>
     /// Represents a specification that is not satisfied by any candidate object.
     /// </summary>
-    public static readonly Spec<T> None = new(_ => false);
+    public static readonly Spec<T> None = new(_ => Result.Failure("temp"));
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Spec{T}"/> class
     /// defined by a specified predicate.
     /// </summary>
     /// <param name="predicate">The predicate that defines the specification.</param>
-    public Spec(Expression<Func<T, bool>> predicate)
+    public Spec(Expression<Func<T, Result>> predicate)
     {
         Predicate = predicate ?? throw new ArgumentNullException(nameof(predicate));
     }
 
     /// <inheritdoc/>
-    public override Expression<Func<T, bool>> Predicate { get; }
+    public override Expression<Func<T, Result>> Predicate { get; }
 }
 
 /// <summary>

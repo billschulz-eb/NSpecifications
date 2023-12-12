@@ -1,5 +1,6 @@
 ﻿using NSpecifications.Internal;
 using System.Diagnostics.CodeAnalysis;
+using CSharpFunctionalExtensions;
 
 namespace NSpecifications;
 
@@ -10,17 +11,17 @@ namespace NSpecifications;
 /// <typeparam name="T">The type of the candidate object.</typeparam>
 public abstract class ASpec<T> : ISpecification<T>
 {
-    private Func<T, bool>? _compiledPredicate;
+    private Func<T, Result>? _compiledPredicate;
 
     /// <summary>
     /// Gets the predicate that defines the current specification.
     /// </summary>
-    public abstract Expression<Func<T, bool>> Predicate { get; }
+    public abstract Expression<Func<T, Result>> Predicate { get; }
 
     /// <summary>
     /// Gets the compiled predicate that defines the current specification.
     /// </summary>
-    protected Func<T, bool> CompiledPredicate => _compiledPredicate ??= Predicate.Compile();
+    protected Func<T, Result> CompiledPredicate => _compiledPredicate ??= Predicate.Compile();
 
     /// <summary>
     /// Casts the candidate type of the current specification to a specified derived candidate type.
@@ -41,7 +42,7 @@ public abstract class ASpec<T> : ISpecification<T>
     /// otherwise, <see langword="false"/>.
     /// </returns>
     public virtual bool IsSatisfiedBy(T candidate)
-        => CompiledPredicate(candidate);
+        => CompiledPredicate(candidate).IsSuccess;
 
     /// <summary>
     /// Determines whether the current specification is satisfied by a specified value.
@@ -62,7 +63,7 @@ public abstract class ASpec<T> : ISpecification<T>
     /// <see langword="true"/> if the specified object is equal to the current specification; otherwise, <see langword="false"/>.
     /// </returns>
     public override bool Equals([NotNullWhen(true)]object? other)
-        => other is ASpec<T> spec && EqualityComparer<Expression<Func<T, bool>>>.Default.Equals(Predicate, spec.Predicate);
+        => other is ASpec<T> spec && EqualityComparer<Expression<Func<T, Result>>>.Default.Equals(Predicate, spec.Predicate);
 
     /// <summary>
     /// Returns a hash code for the current specification.
@@ -190,40 +191,40 @@ public abstract class ASpec<T> : ISpecification<T>
 
 file sealed class CastSpec<TFrom, TTo> : ASpec<TTo> where TTo : TFrom
 {
-    public CastSpec(Expression<Func<TFrom, bool>> predicate)
+    public CastSpec(Expression<Func<TFrom, Result>> predicate)
     {
         Predicate = PredicateBuilder.Cast<TFrom, TTo>(predicate);
     }
 
-    public override Expression<Func<TTo, bool>> Predicate { get; }
+    public override Expression<Func<TTo, Result>> Predicate { get; }
 }
 
 file sealed class NotSpec<T> : ASpec<T>
 {
-    public NotSpec(Expression<Func<T, bool>> predicate)
+    public NotSpec(Expression<Func<T, Result>> predicate)
     {
         Predicate = predicate.Not();
     }
 
-    public override Expression<Func<T, bool>> Predicate { get; }
+    public override Expression<Func<T, Result>> Predicate { get; }
 }
 
 file sealed class AndSpec<T> : ASpec<T>
 {
-    public AndSpec(Expression<Func<T, bool>> left, Expression<Func<T, bool>> right)
+    public AndSpec(Expression<Func<T, Result>> left, Expression<Func<T, Result>> right)
     {
         Predicate = left.And(right);
     }
 
-    public override Expression<Func<T, bool>> Predicate { get; }
+    public override Expression<Func<T, Result>> Predicate { get; }
 }
 
 file sealed class OrSpec<T> : ASpec<T>
 {
-    public OrSpec(Expression<Func<T, bool>> left, Expression<Func<T, bool>> right)
+    public OrSpec(Expression<Func<T, Result>> left, Expression<Func<T, Result>> right)
     {
         Predicate = left.Or(right);
     }
 
-    public override Expression<Func<T, bool>> Predicate { get; }
+    public override Expression<Func<T, Result>> Predicate { get; }
 }
