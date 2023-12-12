@@ -17,7 +17,7 @@ public interface ISpecification
     /// <see langword="true"/> if the specification is satisfied by the specified value;
     /// otherwise, <see langword="false"/>.
     /// </returns>
-    UnitResult<Error> IsSatisfiedBy(object candidate);
+    UnitResult<IError> IsSatisfiedBy(object candidate);
 }
 
 /// <summary>
@@ -35,7 +35,7 @@ public interface ISpecification<T> : ISpecification
     /// <see langword="true"/> if the specification is satisfied by the specified value;
     /// otherwise, <see langword="false"/>.
     /// </returns>
-    UnitResult<Error> IsSatisfiedBy(T candidate);
+    UnitResult<IError> IsSatisfiedBy(T candidate);
 }
 
 /// <summary>

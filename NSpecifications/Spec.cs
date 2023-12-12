@@ -15,12 +15,12 @@ public class Spec<T> : ASpec<T>
     /// <summary>
     /// Represents a specification that is satisfied by any candidate object.
     /// </summary>
-    public static readonly Spec<T> Any = new(_ => true, Error.Null);
+    public static readonly Spec<T> Any = new(_ => true, new Error(0, "<any>"));
 
     /// <summary>
     /// Represents a specification that is not satisfied by any candidate object.
     /// </summary>
-    public static readonly Spec<T> None = new(_ => false, Error.Null);
+    public static readonly Spec<T> None = new(_ => false, new Error(0, "<none>"));
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Spec{T}"/> class

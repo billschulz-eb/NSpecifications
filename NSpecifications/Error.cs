@@ -1,13 +1,14 @@
-using System.Collections;
 using System.IO;
 
 namespace NSpecifications;
 
-public class Error
+public class Error : IError
 {
     private readonly int _errorCode;
     private readonly string _errorMessage;
-    public static readonly Error Null = new(0, String.Empty);
+    
+    public static readonly IError Null = new Error(0, "<null>");
+    public static readonly IError None = new Error(0, "<none>");
     
     public Error(int errorCode, string errorMessage)
     {
@@ -17,33 +18,4 @@ public class Error
 
     public int ErrorCode => _errorCode;
     public string ErrorMessage => _errorMessage;
-}
-
-public class Errors : IEnumerable<Error>
-{
-    public Errors(params Error[] errors)
-    {
-        _errors = errors;
-    }
-
-    public Errors(Errors left, Error right)
-    {
-        _errors = left.Append(right)
-                      .ToArray();
-    }
-
-    private readonly Error[] _errors;
-
-    public IEnumerator<Error> GetEnumerator()
-    {
-        foreach(var error in _errors)
-        {
-            yield return error;
-        }
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
 }

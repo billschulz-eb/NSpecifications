@@ -17,7 +17,7 @@ public static class SpecificationExtensions
     /// <see langword="true"/> if the candidate object satisfies the specification;
     /// otherwise, <see langword="false"/>.
     /// </returns>
-    public static UnitResult<Error> Is<T>(this T candidate, ISpecification<T> spec)
+    public static UnitResult<IError> Is<T>(this T candidate, ISpecification<T> spec)
         => spec.IsSatisfiedBy(candidate);
 
     /// <summary>
@@ -30,12 +30,15 @@ public static class SpecificationExtensions
     /// <see langword="true"/> if all candidate objects satisfy the specification;
     /// otherwise, <see langword="false"/>.
     /// </returns>
-    public static UnitResult<Error> Are<T>(this IEnumerable<T> candidates, ISpecification<T> spec)
-        => candidates.All(c => spec.IsSatisfiedBy(c)
-                                   .IsSuccess
-        )
-            ? UnitResult.Success<Error>()
-            : UnitResult.Failure(Error.Null);
+    public static UnitResult<IError> Are<T>(this IEnumerable<T> candidates, ISpecification<T> spec)
+    {
+        var results = candidates.Select(c => spec.IsSatisfiedBy(c));
+        
+        if(!results.Any(r => r.IsFailure))
+            return UnitResult.Success<IError>();
+
+        return new Errors(results.Select(r => r.Error).ToArray());
+    }
 
     /// <summary>
     /// Creates a specification that negates a specification.
@@ -87,11 +90,11 @@ file sealed class NotSpecification<T> : INotSpecification<T>
 
     public ISpecification<T> Operand { get; }
 
-    public UnitResult<Error> IsSatisfiedBy(T candidate)
-        => !Operand.IsSatisfiedBy(candidate).IsSuccess ? UnitResult.Success<Error>() : UnitResult.Failure<Error>(Error.Null);
+    public UnitResult<IError> IsSatisfiedBy(T candidate)
+        => !Operand.IsSatisfiedBy(candidate).IsSuccess ? UnitResult.Success<IError>() : UnitResult.Failure<IError>(Error.Null);
 
-    public UnitResult<Error> IsSatisfiedBy(object candidate)
-        => !Operand.IsSatisfiedBy(candidate).IsSuccess ? UnitResult.Success<Error>() : UnitResult.Failure<Error>(Error.Null);
+    public UnitResult<IError> IsSatisfiedBy(object candidate)
+        => !Operand.IsSatisfiedBy(candidate).IsSuccess ? UnitResult.Success<IError>() : UnitResult.Failure<IError>(Error.Null);
 }
 
 file sealed class AndSpecification<T> : IAndSpecification<T>
@@ -106,21 +109,22 @@ file sealed class AndSpecification<T> : IAndSpecification<T>
 
     public ISpecification<T> Right { get; }
 
-    public UnitResult<Error> IsSatisfiedBy(T candidate)
-        => Left.IsSatisfiedBy(candidate)
-               .IsSuccess
-         && Right.IsSatisfiedBy(candidate)
-                 .IsSuccess
-                ? UnitResult.Success<Error>()
-                : UnitResult.Failure(Error.Null);
+    public UnitResult<IError> IsSatisfiedBy(T candidate)
+    {
+        var l = Left.IsSatisfiedBy(candidate);
 
-    public UnitResult<Error> IsSatisfiedBy(object candidate)
-        => Left.IsSatisfiedBy(candidate)
-               .IsSuccess
-         && Right.IsSatisfiedBy(candidate)
-                 .IsSuccess
-                ? UnitResult.Success<Error>()
-                : UnitResult.Failure(Error.Null);
+        if(l.IsFailure)
+            return l;
+
+        var r = Right.IsSatisfiedBy(candidate);
+
+        if(r.IsFailure)
+            return r;
+
+        return UnitResult.Success<IError>();
+    }
+
+    public UnitResult<IError> IsSatisfiedBy(object candidate) => IsSatisfiedBy((T)candidate);
 }
 
 file sealed class OrSpecification<T> : IOrSpecification<T>
@@ -135,19 +139,20 @@ file sealed class OrSpecification<T> : IOrSpecification<T>
 
     public ISpecification<T> Right { get; }
 
-    public UnitResult<Error> IsSatisfiedBy(T candidate)
-        => Left.IsSatisfiedBy(candidate)
-               .IsSuccess
-         || Right.IsSatisfiedBy(candidate)
-                 .IsSuccess
-                ? UnitResult.Success<Error>()
-                : UnitResult.Failure(Error.Null);
+    public UnitResult<IError> IsSatisfiedBy(T candidate)
+    {
+        var l = Left.IsSatisfiedBy(candidate);
 
-    public UnitResult<Error> IsSatisfiedBy(object candidate)
-        => Left.IsSatisfiedBy(candidate)
-               .IsSuccess
-         || Right.IsSatisfiedBy(candidate)
-                 .IsSuccess
-                ? UnitResult.Success<Error>()
-                : UnitResult.Failure(Error.Null);
+        if(l.IsSuccess)
+            return l;
+
+        var r = Right.IsSatisfiedBy(candidate);
+
+        if(r.IsSuccess)
+            return r;
+
+        return UnitResult.Failure<IError>(new Errors(l.Error, r.Error));
+    }
+
+    public UnitResult<IError> IsSatisfiedBy(object candidate) => IsSatisfiedBy((T)candidate);
 }

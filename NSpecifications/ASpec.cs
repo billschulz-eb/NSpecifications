@@ -21,7 +21,7 @@ public abstract class ASpec<T> : ISpecification<T>
     /// <summary>
     /// 
     /// </summary>
-    public Error Error { get; protected set; }
+    public IError Error { get; protected set; }
 
     /// <summary>
     /// Gets the compiled predicate that defines the current specification.
@@ -46,7 +46,7 @@ public abstract class ASpec<T> : ISpecification<T>
     /// <see langword="true"/> if the specification is satisfied by the specified value;
     /// otherwise, <see langword="false"/>.
     /// </returns>
-    public virtual UnitResult<Error> IsSatisfiedBy(T candidate)
+    public virtual UnitResult<IError> IsSatisfiedBy(T candidate)
         => UnitResult.SuccessIf(CompiledPredicate(candidate), Error);
 
     /// <summary>
@@ -57,7 +57,7 @@ public abstract class ASpec<T> : ISpecification<T>
     /// <see langword="true"/> if the specification is satisfied by the specified value;
     /// otherwise, <see langword="false"/>.
     /// </returns>
-    public virtual UnitResult<Error> IsSatisfiedBy(object candidate)
+    public virtual UnitResult<IError> IsSatisfiedBy(object candidate)
         => IsSatisfiedBy((T)candidate);
 
     /// <summary>
@@ -200,7 +200,7 @@ file sealed class CastSpec<TFrom, TTo> : ASpec<TTo>
     public CastSpec(Expression<Func<TFrom, bool>> predicate)
     {
         Predicate = PredicateBuilder.Cast<TFrom, TTo>(predicate);
-        Error = Error.Null;
+        Error = NSpecifications.Error.Null;
     }
 
     public override Expression<Func<TTo, bool>> Predicate { get; }
@@ -211,7 +211,7 @@ file sealed class NotSpec<T> : ASpec<T>
     public NotSpec(Expression<Func<T, bool>> predicate)
     {
         Predicate = predicate.Not();
-        Error = Error.Null;
+        Error = NSpecifications.Error.Null;
     }
 
     public override Expression<Func<T, bool>> Predicate { get; }
@@ -222,7 +222,7 @@ file sealed class AndSpec<T> : ASpec<T>
     public AndSpec(Expression<Func<T, bool>> left, Expression<Func<T, bool>> right)
     {
         Predicate = left.And(right);
-        Error = Error.Null;
+        Error = NSpecifications.Error.Null;
     }
 
     public override Expression<Func<T, bool>> Predicate { get; }
@@ -234,7 +234,7 @@ file sealed class OrSpec<T> : ASpec<T>
     public OrSpec(Expression<Func<T, bool>> left, Expression<Func<T, bool>> right)
     {
         Predicate = left.Or(right);
-        Error = Error.Null;
+        Error = NSpecifications.Error.Null;
     }
 
     public override Expression<Func<T, bool>> Predicate { get; }

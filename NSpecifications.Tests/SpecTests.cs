@@ -75,7 +75,15 @@ public sealed class SpecTests
         var orangeJuice = Drink.OrangeJuice();
 
         // Assert
-        new[] { blackberryJuice, appleJuice, orangeJuice }.Are(Spec.Any<Drink>()).IsSuccess.Should().BeTrue();
+        new[]
+            {
+                blackberryJuice,
+                appleJuice,
+                orangeJuice
+            }.Are(Spec.Any<Drink>())
+             .IsSuccess
+             .Should()
+             .BeTrue();
     }
 
     [Test]
@@ -87,6 +95,16 @@ public sealed class SpecTests
         var orangeJuice = Drink.OrangeJuice();
 
         // Assert
-        new[] { blackberryJuice, appleJuice, orangeJuice }.Are(Spec.None<Drink>()).IsSuccess.Should().BeFalse();
+        var result = new[]
+                     {
+                         blackberryJuice,
+                         appleJuice,
+                         orangeJuice
+                     }.Are(Spec.None<Drink>());
+
+        result.IsSuccess.Should()
+              .BeFalse();
+        result.Error.Should()
+              .NotBeNull();
     }
 }
