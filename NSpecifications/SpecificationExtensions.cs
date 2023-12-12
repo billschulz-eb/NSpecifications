@@ -1,4 +1,6 @@
-﻿namespace NSpecifications;
+﻿using CSharpFunctionalExtensions;
+
+namespace NSpecifications;
 
 /// <summary>
 /// Provides extension methods for <see cref="ISpecification{T}"/> objects.
@@ -15,7 +17,7 @@ public static class SpecificationExtensions
     /// <see langword="true"/> if the candidate object satisfies the specification;
     /// otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool Is<T>(this T candidate, ISpecification<T> spec)
+    public static UnitResult<Error> Is<T>(this T candidate, ISpecification<T> spec)
         => spec.IsSatisfiedBy(candidate);
 
     /// <summary>
@@ -28,8 +30,12 @@ public static class SpecificationExtensions
     /// <see langword="true"/> if all candidate objects satisfy the specification;
     /// otherwise, <see langword="false"/>.
     /// </returns>
-    public static  bool Are<T>(this IEnumerable<T> candidates, ISpecification<T> spec)
-        => candidates.All(spec.IsSatisfiedBy);
+    public static UnitResult<Error> Are<T>(this IEnumerable<T> candidates, ISpecification<T> spec)
+        => candidates.All(c => spec.IsSatisfiedBy(c)
+                                   .IsSuccess
+        )
+            ? UnitResult.Success<Error>()
+            : UnitResult.Failure(Error.Null);
 
     /// <summary>
     /// Creates a specification that negates a specification.
@@ -81,11 +87,11 @@ file sealed class NotSpecification<T> : INotSpecification<T>
 
     public ISpecification<T> Operand { get; }
 
-    public bool IsSatisfiedBy(T candidate)
-        => !Operand.IsSatisfiedBy(candidate);
+    public UnitResult<Error> IsSatisfiedBy(T candidate)
+        => !Operand.IsSatisfiedBy(candidate).IsSuccess ? UnitResult.Success<Error>() : UnitResult.Failure<Error>(Error.Null);
 
-    public bool IsSatisfiedBy(object candidate)
-        => !Operand.IsSatisfiedBy(candidate);
+    public UnitResult<Error> IsSatisfiedBy(object candidate)
+        => !Operand.IsSatisfiedBy(candidate).IsSuccess ? UnitResult.Success<Error>() : UnitResult.Failure<Error>(Error.Null);
 }
 
 file sealed class AndSpecification<T> : IAndSpecification<T>
@@ -100,11 +106,21 @@ file sealed class AndSpecification<T> : IAndSpecification<T>
 
     public ISpecification<T> Right { get; }
 
-    public bool IsSatisfiedBy(T candidate)
-        => Left.IsSatisfiedBy(candidate) && Right.IsSatisfiedBy(candidate);
+    public UnitResult<Error> IsSatisfiedBy(T candidate)
+        => Left.IsSatisfiedBy(candidate)
+               .IsSuccess
+         && Right.IsSatisfiedBy(candidate)
+                 .IsSuccess
+                ? UnitResult.Success<Error>()
+                : UnitResult.Failure(Error.Null);
 
-    public bool IsSatisfiedBy(object candidate)
-        => Left.IsSatisfiedBy(candidate) && Right.IsSatisfiedBy(candidate);
+    public UnitResult<Error> IsSatisfiedBy(object candidate)
+        => Left.IsSatisfiedBy(candidate)
+               .IsSuccess
+         && Right.IsSatisfiedBy(candidate)
+                 .IsSuccess
+                ? UnitResult.Success<Error>()
+                : UnitResult.Failure(Error.Null);
 }
 
 file sealed class OrSpecification<T> : IOrSpecification<T>
@@ -119,9 +135,19 @@ file sealed class OrSpecification<T> : IOrSpecification<T>
 
     public ISpecification<T> Right { get; }
 
-    public bool IsSatisfiedBy(T candidate)
-        => Left.IsSatisfiedBy(candidate) || Right.IsSatisfiedBy(candidate);
+    public UnitResult<Error> IsSatisfiedBy(T candidate)
+        => Left.IsSatisfiedBy(candidate)
+               .IsSuccess
+         || Right.IsSatisfiedBy(candidate)
+                 .IsSuccess
+                ? UnitResult.Success<Error>()
+                : UnitResult.Failure(Error.Null);
 
-    public bool IsSatisfiedBy(object candidate)
-        => Left.IsSatisfiedBy(candidate) || Right.IsSatisfiedBy(candidate);
+    public UnitResult<Error> IsSatisfiedBy(object candidate)
+        => Left.IsSatisfiedBy(candidate)
+               .IsSuccess
+         || Right.IsSatisfiedBy(candidate)
+                 .IsSuccess
+                ? UnitResult.Success<Error>()
+                : UnitResult.Failure(Error.Null);
 }

@@ -4,6 +4,7 @@
 /// Represents a generic specification.
 /// </summary>
 /// <typeparam name="T">The type of the candidate object.</typeparam>
+/// <typeparam name="E">The type of the error to be returned in the Result{T, E}"></typeparam>.</typeparam>
 /// <remarks>
 /// If your specification relies on properties that are changed after instantiating it
 /// this implementation might fail because the IsSatisfiedBy is compiled and cached on
@@ -14,21 +15,22 @@ public class Spec<T> : ASpec<T>
     /// <summary>
     /// Represents a specification that is satisfied by any candidate object.
     /// </summary>
-    public static readonly Spec<T> Any = new(_ => true);
+    public static readonly Spec<T> Any = new(_ => true, Error.Null);
 
     /// <summary>
     /// Represents a specification that is not satisfied by any candidate object.
     /// </summary>
-    public static readonly Spec<T> None = new(_ => false);
+    public static readonly Spec<T> None = new(_ => false, Error.Null);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Spec{T}"/> class
     /// defined by a specified predicate.
     /// </summary>
     /// <param name="predicate">The predicate that defines the specification.</param>
-    public Spec(Expression<Func<T, bool>> predicate)
+    public Spec(Expression<Func<T, bool>> predicate, Error error)
     {
         Predicate = predicate ?? throw new ArgumentNullException(nameof(predicate));
+        Error = error;
     }
 
     /// <inheritdoc/>

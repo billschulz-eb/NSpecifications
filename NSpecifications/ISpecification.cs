@@ -1,4 +1,6 @@
-﻿namespace NSpecifications;
+﻿using CSharpFunctionalExtensions;
+
+namespace NSpecifications;
 
 /// <summary>
 /// Defines methods to determine whether an
@@ -10,11 +12,12 @@ public interface ISpecification
     /// Determines whether the specification is satisfied by a specified value.
     /// </summary>
     /// <param name="candidate">The value to check.</param>
+    /// <param name="error">The error to return in the Result{E}.</param>
     /// <returns>
     /// <see langword="true"/> if the specification is satisfied by the specified value;
     /// otherwise, <see langword="false"/>.
     /// </returns>
-    bool IsSatisfiedBy(object candidate);
+    UnitResult<Error> IsSatisfiedBy(object candidate);
 }
 
 /// <summary>
@@ -32,7 +35,7 @@ public interface ISpecification<T> : ISpecification
     /// <see langword="true"/> if the specification is satisfied by the specified value;
     /// otherwise, <see langword="false"/>.
     /// </returns>
-    bool IsSatisfiedBy(T candidate);
+    UnitResult<Error> IsSatisfiedBy(T candidate);
 }
 
 /// <summary>
